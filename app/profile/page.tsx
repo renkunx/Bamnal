@@ -18,8 +18,12 @@ import {
 } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/components/auth/auth-provider"
 
 export default function ProfilePage() {
+  const router = useRouter()
+  const { user } = useAuth()
   const { records, tags } = useStore()
   const [darkMode, setDarkMode] = useState(false)
   const [remindersEnabled, setRemindersEnabled] = useState(true)
@@ -65,6 +69,26 @@ export default function ProfilePage() {
       title: "数据导出成功",
       description: "您的数据已成功导出为JSON文件",
     })
+  }
+
+  // 如果未登录，显示登录入口
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex flex-col items-center py-8">
+            <Avatar className="h-20 w-20 mb-4">
+              <AvatarFallback>访客</AvatarFallback>
+            </Avatar>
+            <h2 className="text-2xl font-bold mb-2">欢迎使用竹节记</h2>
+            <p className="text-gray-500 mb-6">登录后开始记录生活点滴</p>
+            <Button onClick={() => router.push('/auth/login')} className="w-full">
+              立即登录
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
