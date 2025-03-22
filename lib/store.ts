@@ -77,6 +77,8 @@ export const useStore = create<BambooStore>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const supabase = getSupabaseClient()
+      if (!supabase) throw new Error("Supabase client not available")
+
       const { data, error } = await supabase.from("tags").select("*").order("created_at", { ascending: false })
 
       if (error) throw error

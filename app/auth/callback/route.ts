@@ -8,12 +8,17 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code")
 
   if (code) {
-    const cookieStore = cookies()
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-    await supabase.auth.exchangeCodeForSession(code)
+    try {
+      const cookieStore = cookies()
+      const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+      await supabase.auth.exchangeCodeForSession(code)
+    } catch (error) {
+      console.error("Error exchanging code for session:", error)
+      // 即使出错，也继续重定向到首页
+    }
   }
 
-  // URL to redirect to after sign in process completes
+  // 认证过程完成后重定向到首页
   return NextResponse.redirect(requestUrl.origin)
 }
 

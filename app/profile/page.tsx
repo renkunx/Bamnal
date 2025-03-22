@@ -1,11 +1,12 @@
 "use client"
 
+import { useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { TagList } from "@/components/tag-list"
 import Link from "next/link"
-import { Settings, Bell, Download, Moon, HelpCircle, LogOut, BarChart2 } from "lucide-react"
+import { Settings, Bell, Download, Moon, HelpCircle, LogOut, BarChart2, Edit } from "lucide-react"
 import { useStore } from "@/lib/store"
 import { useState } from "react"
 import {
@@ -18,19 +19,25 @@ import {
 } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/use-toast"
-import { useRouter } from "next/navigation"
+import { useProfileStore } from "@/lib/profile-service"
 import { useAuth } from "@/components/auth/auth-provider"
 
 export default function ProfilePage() {
-  const router = useRouter()
-  const { user } = useAuth()
   const { records, tags } = useStore()
+  const { user } = useAuth()
+  const { profile, fetchProfile } = useProfileStore()
   const [darkMode, setDarkMode] = useState(false)
   const [remindersEnabled, setRemindersEnabled] = useState(true)
   const [showSettingsDialog, setShowSettingsDialog] = useState(false)
   const [showRemindersDialog, setShowRemindersDialog] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [showThemeDialog, setShowThemeDialog] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile()
+    }
+  }, [user, fetchProfile])
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode)
@@ -71,24 +78,12 @@ export default function ProfilePage() {
     })
   }
 
-  // 如果未登录，显示登录入口
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center py-8">
-            <Avatar className="h-20 w-20 mb-4">
-              <AvatarFallback>访客</AvatarFallback>
-            </Avatar>
-            <h2 className="text-2xl font-bold mb-2">欢迎使用竹节记</h2>
-            <p className="text-gray-500 mb-6">登录后开始记录生活点滴</p>
-            <Button onClick={() => router.push('/auth/login')} className="w-full">
-              立即登录
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
+  // 获取用户名首字母或默认值
+  const getInitials = () => {
+    if (profile?.username) {
+      return profile.username.charAt(0).toUpperCase()
+    }
+    return "用户"
   }
 
   return (
@@ -98,11 +93,17 @@ export default function ProfilePage() {
         <CardContent className="pt-0">
           <div className="flex flex-col items-center -mt-12 mb-4">
             <Avatar className="h-24 w-24 border-4 border-white">
-              <AvatarImage src="/placeholder.svg?height=96&width=96&text=ZS" alt="用户头像" />
-              <AvatarFallback className="bg-primary text-white text-xl">ZS</AvatarFallback>
+              <AvatarImage src={profile?.avatarUrl || "/placeholder.svg?height=96&width=96&text=ZS"} alt="用户头像" />
+              <AvatarFallback className="bg-primary text-white text-xl">{getInitials()}</AvatarFallback>
             </Avatar>
-            <h2 className="text-2xl font-bold mt-2">张三</h2>
-            <p className="text-gray-500">记录生活的点滴</p>
+            <h2 className="text-2xl font-bold mt-2">{profile?.username || "未设置用户名"}</h2>
+            <p className="text-gray-500">{profile?.slogan || "记录生活的点滴"}</p>
+
+            <Button asChild variant="outline" size="sm" className="mt-2">
+              <Link href="/profile/edit" className="flex items-center">
+                <Edit className="mr-2 h-4 w-4" /> 编辑个人信息
+              </Link>
+            </Button>
           </div>
 
           <div className="grid grid-cols-3 gap-4 text-center py-4 border-t border-b">

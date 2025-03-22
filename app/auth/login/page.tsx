@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
 import Link from "next/link"
 import { Logo } from "@/components/logo"
+import { getSupabaseClient } from "@/lib/supabase/client"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -39,7 +40,25 @@ export default function LoginPage() {
         title: "登录成功",
         description: "欢迎回到竹节记",
       })
-      router.push("/")
+
+      // 获取用户资料
+      const supabase = getSupabaseClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (user) {
+        const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single()
+
+        // 如果用户名为空，引导用户完善个人信息
+        if (!profile || !profile.username) {
+          router.push("/profile/edit?new=true")
+        } else {
+          router.push("/")
+        }
+      } else {
+        router.push("/")
+      }
     } catch (error) {
       console.error("Login error:", error)
       toast({

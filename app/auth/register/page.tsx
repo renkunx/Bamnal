@@ -52,9 +52,9 @@ export default function RegisterPage() {
         description: "请查看您的邮箱以验证账号",
       })
 
-      // 如果是自动确认的，直接跳转到主页
+      // 如果是自动确认的，直接跳转到个人信息编辑页面
       if (data?.session) {
-        router.push("/")
+        router.push("/profile/edit?new=true")
       } else {
         // 否则显示验证邮件已发送
         router.push("/auth/verify")
