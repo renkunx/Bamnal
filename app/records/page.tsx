@@ -219,14 +219,15 @@ export default function RecordsPage() {
                               </div>
 
                               {hasImage(record) && (
-                                <div className="w-full h-48 relative">
+                                <div className="w-full">
                                   <Image
                                     src={
                                       record.imageUrl || `/placeholder.svg?height=192&width=384&text=${record.title}`
                                     }
                                     alt={record.title}
-                                    fill
-                                    className="object-cover"
+                                    width={384}
+                                    height={192}
+                                    className="w-full h-auto object-contain"
                                   />
                                 </div>
                               )}
@@ -268,7 +269,7 @@ export default function RecordsPage() {
       {/* Floating add button */}
       <Link href="/records/new">
         <Button className="fixed right-6 bottom-24 h-14 w-14 rounded-full shadow-lg bamboo-gradient">
-          <Plus size={24} className="text-white" />
+          <Plus size={24} className="text-white" strokeWidth={3} />
         </Button>
       </Link>
 

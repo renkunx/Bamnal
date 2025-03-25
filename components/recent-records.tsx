@@ -88,7 +88,7 @@ export function RecentRecords() {
                         alt={record.title}
                         width={64}
                         height={64}
-                        className="object-cover w-full h-full"
+                        className="object-contain w-full h-full"
                       />
                     </div>
                   ) : (

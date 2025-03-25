@@ -242,7 +242,7 @@ export default function RecordDetailPage({ params }: { params: { id: string } })
               <div>
                 <CardTitle className="text-xl">{record.title}</CardTitle>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge className="bg-gray-50 text-gray-700">{getRecordTypeName(record.type)}</Badge>
+                  <Badge className="bg-gray-50 text-gray-700 tag-badge">{getRecordTypeName(record.type)}</Badge>
                   <p className="text-sm text-gray-500">
                     {format(new Date(record.createdAt), "yyyy年MM月dd日 HH:mm", { locale: zhCN })}
                   </p>

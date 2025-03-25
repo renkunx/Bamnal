@@ -20,8 +20,16 @@
     ],
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".next", "out"]
 }
