@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { useRouter } from "next/navigation"
 import { createContext, useContext, useEffect, useState } from "react"
 import { getSupabaseClient } from "@/lib/supabase/client"
 import type { User, Session } from "@supabase/supabase-js"
@@ -23,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const supabase = getSupabaseClient()
+  const router = useRouter()
 
   useEffect(() => {
     const getSession = async () => {
@@ -48,32 +49,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       setUser(session?.user ?? null)
       setIsLoading(false)
+      
+      // 根据认证状态进行路由跳转
+      if (session) {
+        router.push('/')
+      } else {
+        router.push('/auth/login')
+      }
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [supabase, router])
 
   const signIn = async (email: string, password: string) => {
-    return await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
+    if (!error) {
+      router.push('/')
+    }
+    return { error }
   }
 
   const signUp = async (email: string, password: string) => {
-    return await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
+    if (!error) {
+      router.push('/auth/verify-email')
+    }
+    return { error }
   }
 
   const signOut = async () => {
     await supabase.auth.signOut()
+    router.push('/auth/login')
   }
 
   const resetPassword = async (email: string) => {

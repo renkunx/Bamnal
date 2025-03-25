@@ -21,10 +21,12 @@ import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/use-toast"
 import { useProfileStore } from "@/lib/profile-service"
 import { useAuth } from "@/components/auth/auth-provider"
-
+import { useRouter } from 'next/navigation'
+import { getSupabaseClient } from "@/lib/supabase/client"
 export default function ProfilePage() {
   const { records, tags } = useStore()
   const { user } = useAuth()
+  const router = useRouter()
   const { profile, fetchProfile } = useProfileStore()
   const [darkMode, setDarkMode] = useState(false)
   const [remindersEnabled, setRemindersEnabled] = useState(true)
@@ -32,6 +34,7 @@ export default function ProfilePage() {
   const [showRemindersDialog, setShowRemindersDialog] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [showThemeDialog, setShowThemeDialog] = useState(false)
+  const supabase = getSupabaseClient()
 
   useEffect(() => {
     if (user) {
@@ -84,6 +87,11 @@ export default function ProfilePage() {
       return profile.username.charAt(0).toUpperCase()
     }
     return "用户"
+  }
+
+  const logout = () => {
+    supabase.auth.signOut()
+    router.push("/auth/login")
   }
 
   return (
@@ -204,7 +212,7 @@ export default function ProfilePage() {
         <Button variant="outline" className="w-full flex justify-start">
           <HelpCircle className="mr-2 h-4 w-4" /> 帮助与反馈
         </Button>
-        <Button variant="outline" className="w-full flex justify-start text-red-500 hover:text-red-600">
+        <Button onClick={logout} variant="outline" className="w-full flex justify-start text-red-500 hover:text-red-600">
           <LogOut className="mr-2 h-4 w-4" /> 退出登录
         </Button>
       </div>

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth/auth-provider"
 import { Button } from "@/components/ui/button"
@@ -56,8 +56,6 @@ export default function LoginPage() {
         } else {
           router.push("/")
         }
-      } else {
-        router.push("/")
       }
     } catch (error) {
       console.error("Login error:", error)
@@ -70,6 +68,18 @@ export default function LoginPage() {
       setIsLoading(false)
     }
   }
+
+  // 如果已经登录，直接跳转到首页
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = getSupabaseClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.push('/')
+      }
+    }
+    checkAuth()
+  }, [router])
 
   return (
     <div className="flex items-center justify-center bg-gray-50 px-4 pt-4">
@@ -98,13 +108,12 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">密码</Label>
                 <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
-                  忘记密码?
+                  忘记密码？
                 </Link>
               </div>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -115,11 +124,11 @@ export default function LoginPage() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col">
-          <div className="text-center text-sm">
-            还没有账号?{" "}
-            <Link href="/auth/register" className="text-primary hover:underline">
-              注册账号
+        <CardFooter className="flex flex-col space-y-4">
+          <div className="text-sm text-center text-gray-500">
+            还没有账号？
+            <Link href="/auth/register" className="text-primary hover:underline ml-1">
+              立即注册
             </Link>
           </div>
         </CardFooter>
