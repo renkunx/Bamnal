@@ -9,6 +9,7 @@ import { ChevronRight, FileText, ImageIcon, DollarSign, Ruler } from "lucide-rea
 import { useStore } from "@/lib/store"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
+import { TimeDisplay } from "@/components/time-display"
 
 export function RecentRecords() {
   const { records, tags } = useStore()
@@ -100,9 +101,9 @@ export function RecentRecords() {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{record.title}</p>
-                    <p className="text-sm text-gray-500">
-                      {format(new Date(record.createdAt), "yyyy年MM月dd日", { locale: zhCN })}
-                    </p>
+                    <div className="text-sm text-gray-500">
+                      <TimeDisplay date={record.createdAt} />
+                    </div>
                     {tag && <Badge className={`mt-1 ${tag.color} text-white`}>{tag.name}</Badge>}
 
                     {record.type === "expense" && (

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
+import { TimeDisplay } from "@/components/time-display"
 
 export default function RecordsPage() {
   const { records, tags, deleteRecord } = useStore()
@@ -164,7 +165,7 @@ export default function RecordsPage() {
 
                           {/* Time */}
                           <div className="absolute -left-32 top-2 w-24 text-right text-sm text-gray-500 hidden md:block">
-                            {format(new Date(record.createdAt), "HH:mm", { locale: zhCN })}
+                            <TimeDisplay date={record.createdAt} />
                           </div>
 
                           <Card className={`ml-6 overflow-hidden card-hover border-l-4 ${borderColorClass}`}>
@@ -176,7 +177,7 @@ export default function RecordsPage() {
                                 </div>
 
                                 <div className="text-sm text-gray-500 mb-2">
-                                  {format(new Date(record.createdAt), "HH:mm", { locale: zhCN })}
+                                  <TimeDisplay date={record.createdAt} />
                                 </div>
 
                                 {record.type === "expense" && (

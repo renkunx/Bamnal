@@ -10,6 +10,7 @@ import Image from "next/image"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import { Badge } from "@/components/ui/badge"
+import { TimeDisplay } from "@/components/time-display"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -243,9 +244,7 @@ export default function RecordDetailPage({ params }: { params: { id: string } })
                 <CardTitle className="text-xl">{record.title}</CardTitle>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge className="bg-gray-50 text-gray-700 tag-badge">{getRecordTypeName(record.type)}</Badge>
-                  <p className="text-sm text-gray-500">
-                    {format(new Date(record.createdAt), "yyyy年MM月dd日 HH:mm", { locale: zhCN })}
-                  </p>
+                  <TimeDisplay date={record.createdAt} />
                 </div>
               </div>
               <span className={`tag-badge ${tag.color} text-white`}>{tag.name}</span>
