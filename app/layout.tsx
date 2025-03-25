@@ -14,8 +14,7 @@ export const metadata: Metadata = {
   description: "一款高度可定制的生活记录工具",
   icons: {
     icon: "/favicon.ico",
-  },
-  manifest: './manifest.json'
+  }
 }
 
 export default function RootLayout({
