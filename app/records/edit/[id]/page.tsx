@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useEffect, useState } from "react"
+import { useEffect, useState, use } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,9 +27,10 @@ export default function EditRecordPage({ params }: { params: { id: string } }) {
   const [measurementType, setMeasurementType] = useState("")
   const [measurementValue, setMeasurementValue] = useState<number | undefined>()
   const [measurementUnit, setMeasurementUnit] = useState("")
+  const id = use(params).id
 
   useEffect(() => {
-    const foundRecord = records.find((r) => r.id === params.id)
+    const foundRecord = records.find((r) => r.id === id)
     if (foundRecord) {
       setRecord(foundRecord)
       setTitle(foundRecord.title)
@@ -46,7 +46,7 @@ export default function EditRecordPage({ params }: { params: { id: string } }) {
     } else {
       router.push("/records")
     }
-  }, [params.id, records, router])
+  }, [id, records, router])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

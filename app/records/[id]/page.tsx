@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, use } from "react"
 import { useStore, type Record } from "@/lib/store"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,9 +30,10 @@ export default function RecordDetailPage({ params }: { params: { id: string } })
   const [tag, setTag] = useState<any>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [similarRecords, setSimilarRecords] = useState<Record[]>([])
+  const id = use(params).id
 
   useEffect(() => {
-    const foundRecord = records.find((r) => r.id === params.id)
+    const foundRecord = records.find((r) => r.id === id)
     if (foundRecord) {
       setRecord(foundRecord)
       const foundTag = tags.find((t) => t.id === foundRecord.tagId)
@@ -54,7 +55,7 @@ export default function RecordDetailPage({ params }: { params: { id: string } })
     } else {
       router.push("/records")
     }
-  }, [params.id, records, tags, router])
+  }, [id, records, tags, router])
 
   const handleDelete = () => {
     if (record) {
