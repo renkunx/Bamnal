@@ -1,4 +1,4 @@
-import { MetadataRoute } from 'next'
+import { type MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -8,16 +8,21 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
-    theme_color: "#16a34a",
+    theme_color: "#ffffff",
     icons: [
       {
-        src: "/icon-192x192.png",
+        src: "/bamboo-logo-64.png",
+        sizes: "64x64",
+        type: "image/png"
+      },
+      {
+        src: "/bamboo-logo-192.png",
         sizes: "192x192",
         type: "image/png"
       },
       {
-        src: "/icon-512x512.png",
-        sizes: "512x512",
+        src: "/bamboo-logo-640.png",
+        sizes: "640x640",
         type: "image/png"
       }
     ]
