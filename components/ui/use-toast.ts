@@ -6,8 +6,8 @@ import { useEffect, useState } from "react"
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 5
+const TOAST_REMOVE_DELAY = 30000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -144,6 +144,11 @@ function toast({ ...props }: Toast) {
     },
   })
 
+  // 自动关闭
+  setTimeout(() => {
+    dismiss()
+  }, TOAST_REMOVE_DELAY)
+
   return {
     id: id,
     dismiss,
@@ -162,7 +167,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+  }, [])
 
   return {
     ...state,

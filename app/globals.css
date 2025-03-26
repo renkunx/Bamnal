@@ -14,6 +14,7 @@
 
   --background: 0 0% 100%;
   --foreground: 240 10% 3.9%;
+  
 
   --card: 0 0% 100%;
   --card-foreground: 240 10% 3.9%;
@@ -99,3 +100,14 @@
   }
 }
 
+/* 添加对 iPhone 底部安全区域的支持 */
+@supports (padding: max(0px)) {
+  .safe-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* 确保内容不会被底部导航栏遮挡 */
+main {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+}
