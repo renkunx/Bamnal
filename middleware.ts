@@ -1,35 +1,46 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const isAuthenticated = request.cookies.has("auth-token")
 
-  try {
-    const supabase = createMiddlewareClient({ req, res })
+  // 允许访问 public 目录下的资源
+  // if (pathname.startsWith("/_next") || pathname.startsWith("/images") || pathname.startsWith("/favicon.ico")) {
+  //   return NextResponse.next()
+  // }
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+  // 需要认证的路径
+  const authRequiredPaths = ["/records", "/stats", "/settings"]
+  const isAuthRequired = authRequiredPaths.some((path) => pathname.startsWith(path))
 
-    // 如果用户未登录且当前路径不是/auth/*，重定向到/auth/login
-    if (!session && !req.nextUrl.pathname.startsWith("/auth/")) {
-      return NextResponse.redirect(new URL("/auth/login", req.url))
-    }
-
-    // 如果用户已登录且当前路径是/auth/*，重定向到/
-    if (session && req.nextUrl.pathname.startsWith("/auth/")) {
-      return NextResponse.redirect(new URL("/", req.url))
-    }
-  } catch (error) {
-    console.error("Middleware error:", error)
-    // 出错时，允许请求继续，但不执行重定向
+  // 如果路径需要认证但用户未登录，重定向到登录页
+  if (isAuthRequired && !isAuthenticated) {
+    const loginUrl = new URL("/auth/login", request.url)
+    loginUrl.searchParams.set("from", pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
-  return res
+  // 如果用户已登录但访问登录/注册页，重定向到首页
+  if (isAuthenticated && (pathname.startsWith("/auth/login") || pathname.startsWith("/auth/register"))) {
+    return NextResponse.redirect(new URL("/", request.url))
+  }
+
+  return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    /*
+     * 匹配所有路径除了:
+     * - api (API 路由)
+     * - _next/static (静态文件)
+     * - _next/image (图片优化)
+     * - favicon.ico (浏览器图标)
+     * - images (图片资源)
+     * - manifest (manifest.json)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|images|manifest).*)",
+  ],
 }
 
