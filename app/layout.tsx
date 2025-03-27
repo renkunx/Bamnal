@@ -7,6 +7,7 @@ import { Logo } from "@/components/logo"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/components/auth/auth-provider"
 import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -32,10 +33,11 @@ export default function RootLayout({
             </div>
           </header>
           <main className="container mx-auto px-4 py-6 pb-24">{children}</main>
-          <Analytics />
           <BottomNav />
           <Toaster />
         </AuthProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
