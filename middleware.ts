@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const isAuthenticated = request.cookies.has("auth-token")
-
+  const supabase = createMiddlewareClient({ req: request, res: NextResponse.next() })
+  
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  const isAuthenticated = !!(session?.user)
   // 允许访问 public 目录下的资源
   // if (pathname.startsWith("/_next") || pathname.startsWith("/images") || pathname.startsWith("/favicon.ico")) {
   //   return NextResponse.next()
@@ -22,7 +27,7 @@ export function middleware(request: NextRequest) {
   }
 
   // 如果用户已登录但访问登录/注册页，重定向到首页
-  if (isAuthenticated && (pathname.startsWith("/auth/login") || pathname.startsWith("/auth/register"))) {
+  if (isAuthenticated && pathname.startsWith("/auth/")) {
     return NextResponse.redirect(new URL("/", request.url))
   }
 
