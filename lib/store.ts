@@ -2,6 +2,7 @@
 
 import { create } from "zustand"
 import { getSupabaseClient } from "@/lib/supabase/client"
+import { getSignedUrl, uploadImage } from './supabase/storage'
 
 export type RecordType = "text" | "image" | "expense" | "measurement"
 
@@ -19,9 +20,10 @@ export interface Record {
   title: string
   tagId: string
   type: RecordType
-  content?: string
+  content: string
   imageUrl?: string
   amount?: number
+  unit?: string
   category?: string
   measurementType?: string
   measurementValue?: number
@@ -55,7 +57,7 @@ interface BambooStore {
   // 记录操作
   fetchRecords: () => Promise<void>
   addRecord: (record: Omit<Record, "id" | "createdAt">) => Promise<Record | null>
-  updateRecord: (id: string, record: Partial<Omit<Record, "id" | "createdAt">>) => Promise<void>
+  updateRecord: (id: string, record: Partial<Record>) => Promise<void>
   deleteRecord: (id: string) => Promise<void>
 
   // 提醒操作
@@ -77,22 +79,18 @@ export const useStore = create<BambooStore>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const supabase = getSupabaseClient()
-      if (!supabase) throw new Error("Supabase client not available")
-
       const { data, error } = await supabase.from("tags").select("*").order("created_at", { ascending: false })
-
       if (error) throw error
 
       set({
-        tags:
-          data?.map((tag) => ({
-            id: tag.id,
-            name: tag.name,
-            color: tag.color,
-            icon: tag.icon || undefined,
-            category: tag.category || undefined,
-            createdAt: tag.created_at,
-          })) || [],
+        tags: (data || []).map(tag => ({
+          id: tag.id as string,
+          name: tag.name as string,
+          color: tag.color as string,
+          icon: tag.icon as string,
+          category: tag.category as string,
+          createdAt: tag.created_at as string
+        })),
         isLoading: false,
       })
     } catch (error) {
@@ -101,40 +99,32 @@ export const useStore = create<BambooStore>((set, get) => ({
     }
   },
 
-  addTag: async (tag) => {
+  addTag: async (tag: Omit<Tag, "id" | "createdAt">) => {
     set({ isLoading: true, error: null })
     try {
       const supabase = getSupabaseClient()
-      const { data: userData } = await supabase.auth.getUser()
-
-      if (!userData.user) throw new Error("用户未登录")
-
       const { data, error } = await supabase
         .from("tags")
-        .insert([
-          {
-            user_id: userData.user.id,
-            name: tag.name,
-            color: tag.color,
-            icon: tag.icon,
-            category: tag.category,
-          },
-        ])
+        .insert(tag)
         .select()
         .single()
 
       if (error) throw error
 
-      const newTag = {
-        id: data.id,
-        name: data.name,
-        color: data.color,
-        icon: data.icon || undefined,
-        category: data.category || undefined,
-        createdAt: data.created_at,
+      const newTag: Tag = {
+        id: data.id as string,
+        name: data.name as string,
+        color: data.color as string,
+        icon: data.icon as string,
+        category: data.category as string,
+        createdAt: data.created_at as string
       }
 
-      set((state) => ({ tags: [newTag, ...state.tags], isLoading: false }))
+      set((state) => ({
+        tags: [newTag, ...state.tags],
+        isLoading: false,
+      }))
+
       return newTag
     } catch (error) {
       console.error("Error adding tag:", error)
@@ -195,25 +185,33 @@ export const useStore = create<BambooStore>((set, get) => ({
     try {
       const supabase = getSupabaseClient()
       const { data, error } = await supabase.from("records").select("*").order("created_at", { ascending: false })
-
       if (error) throw error
 
+      // 获取图片url
+      const records = await Promise.all(data?.map(async (record) => {
+        let image_url = undefined
+        if (record.image_url) {
+          image_url = await getSignedUrl(record.image_url as string, 'records')
+        }
+
+        return {
+          id: record.id as string,
+          title: record.title as string,
+          tagId: record.tag_id as string,
+          type: record.type as "text" | "image" | "expense" | "measurement",
+          content: record.content as string,
+          imageUrl: image_url,
+          amount: record.amount as number,
+          category: record.category as string,
+          measurementType: record.measurement_type as string,
+          measurementValue: record.measurement_value as number,
+          measurementUnit: record.measurement_unit as string,
+          createdAt: record.created_at as string
+        } as Record
+      }))
+
       set({
-        records:
-          data?.map((record) => ({
-            id: record.id,
-            title: record.title,
-            tagId: record.tag_id,
-            type: record.type as RecordType,
-            content: record.content || undefined,
-            imageUrl: record.image_url || undefined,
-            amount: record.amount || undefined,
-            category: record.category || undefined,
-            measurementType: record.measurement_type || undefined,
-            measurementValue: record.measurement_value || undefined,
-            measurementUnit: record.measurement_unit || undefined,
-            createdAt: record.created_at,
-          })) || [],
+        records: records || [],
         isLoading: false,
       })
     } catch (error) {
@@ -222,13 +220,16 @@ export const useStore = create<BambooStore>((set, get) => ({
     }
   },
 
-  addRecord: async (record) => {
+  addRecord: async (record: Omit<Record, "id" | "createdAt">) => {
     set({ isLoading: true, error: null })
     try {
       const supabase = getSupabaseClient()
       const { data: userData } = await supabase.auth.getUser()
 
       if (!userData.user) throw new Error("用户未登录")
+
+      // 将文件上传storage
+      const { path } = await uploadImage(record?.imageUrl || '', userData.user.id, 'records')
 
       const { data, error } = await supabase
         .from("records")
@@ -239,7 +240,7 @@ export const useStore = create<BambooStore>((set, get) => ({
             title: record.title,
             type: record.type,
             content: record.content,
-            image_url: record.imageUrl,
+            image_url: path,
             amount: record.amount,
             category: record.category,
             measurement_type: record.measurementType,
@@ -252,22 +253,23 @@ export const useStore = create<BambooStore>((set, get) => ({
 
       if (error) throw error
 
-      const newRecord = {
-        id: data.id,
-        title: data.title,
-        tagId: data.tag_id,
-        type: data.type as RecordType,
-        content: data.content || undefined,
-        imageUrl: data.image_url || undefined,
-        amount: data.amount || undefined,
-        category: data.category || undefined,
-        measurementType: data.measurement_type || undefined,
-        measurementValue: data.measurement_value || undefined,
-        measurementUnit: data.measurement_unit || undefined,
-        createdAt: data.created_at,
+      const newRecord: Record = {
+        id: data.id as string,
+        title: data.title as string,
+        tagId: data.tag_id as string,
+        type: data.type as "text" | "image" | "expense" | "measurement",
+        content: data.content as string,
+        imageUrl: data.image_url as string,
+        amount: data.amount as number,
+        unit: data.unit as string,
+        createdAt: data.created_at as string
       }
 
-      set((state) => ({ records: [newRecord, ...state.records], isLoading: false }))
+      set((state) => ({
+        records: [newRecord, ...state.records],
+        isLoading: false,
+      }))
+
       return newRecord
     } catch (error) {
       console.error("Error adding record:", error)
@@ -276,10 +278,18 @@ export const useStore = create<BambooStore>((set, get) => ({
     }
   },
 
-  updateRecord: async (id, record) => {
+  updateRecord: async (id: string, record: Partial<Record>) => {
     set({ isLoading: true, error: null })
     try {
       const supabase = getSupabaseClient()
+      const { data: userData } = await supabase.auth.getUser()
+      let image_url = undefined
+      if (record.imageUrl?.includes(';base64,')){
+        // 将文件上传storage
+        const { path } = await uploadImage(record?.imageUrl || '', userData?.user?.id, 'records')
+        record.imageUrl = path
+        image_url = await getSignedUrl(path, 'records')
+      }
 
       const { error } = await supabase
         .from("records")
@@ -300,7 +310,13 @@ export const useStore = create<BambooStore>((set, get) => ({
       if (error) throw error
 
       set((state) => ({
-        records: state.records.map((r) => (r.id === id ? { ...r, ...record } : r)),
+        records: state.records.map((r) =>
+          r.id === id ? { 
+            ...r, 
+            ...record,
+            imageUrl: image_url || r.imageUrl
+          } : r
+        ),
         isLoading: false,
       }))
     } catch (error) {
@@ -333,20 +349,18 @@ export const useStore = create<BambooStore>((set, get) => ({
     try {
       const supabase = getSupabaseClient()
       const { data, error } = await supabase.from("reminders").select("*").order("created_at", { ascending: false })
-
       if (error) throw error
 
       set({
-        reminders:
-          data?.map((reminder) => ({
-            id: reminder.id,
-            title: reminder.title,
-            tagId: reminder.tag_id,
-            frequency: reminder.frequency as "daily" | "weekly" | "monthly",
-            time: reminder.time,
-            enabled: reminder.enabled,
-            createdAt: reminder.created_at,
-          })) || [],
+        reminders: (data || []).map(reminder => ({
+          id: reminder.id as string,
+          title: reminder.title as string,
+          tagId: reminder.tag_id as string,
+          frequency: reminder.frequency as "daily" | "weekly" | "monthly",
+          time: reminder.time as string,
+          enabled: reminder.enabled as boolean,
+          createdAt: reminder.created_at as string
+        })),
         isLoading: false,
       })
     } catch (error) {
@@ -355,42 +369,33 @@ export const useStore = create<BambooStore>((set, get) => ({
     }
   },
 
-  addReminder: async (reminder) => {
+  addReminder: async (reminder: Omit<Reminder, "id" | "createdAt">) => {
     set({ isLoading: true, error: null })
     try {
       const supabase = getSupabaseClient()
-      const { data: userData } = await supabase.auth.getUser()
-
-      if (!userData.user) throw new Error("用户未登录")
-
       const { data, error } = await supabase
         .from("reminders")
-        .insert([
-          {
-            user_id: userData.user.id,
-            tag_id: reminder.tagId,
-            title: reminder.title,
-            frequency: reminder.frequency,
-            time: reminder.time,
-            enabled: reminder.enabled,
-          },
-        ])
+        .insert(reminder)
         .select()
         .single()
 
       if (error) throw error
 
-      const newReminder = {
-        id: data.id,
-        title: data.title,
-        tagId: data.tag_id,
+      const newReminder: Reminder = {
+        id: data.id as string,
+        title: data.title as string,
+        tagId: data.tag_id as string,
         frequency: data.frequency as "daily" | "weekly" | "monthly",
-        time: data.time,
-        enabled: data.enabled,
-        createdAt: data.created_at,
+        time: data.time as string,
+        enabled: data.enabled as boolean,
+        createdAt: data.created_at as string
       }
 
-      set((state) => ({ reminders: [newReminder, ...state.reminders], isLoading: false }))
+      set((state) => ({
+        reminders: [newReminder, ...state.reminders],
+        isLoading: false,
+      }))
+
       return newReminder
     } catch (error) {
       console.error("Error adding reminder:", error)

@@ -138,7 +138,7 @@ export default function RecordsPage() {
 
               return (
                 <div key={date} className="relative">
-                  <div className="sticky top-0 z-10 bg-gray-50 py-2 px-4 rounded-lg mb-4 shadow-sm">
+                  <div className="sticky top-[57] z-10 bg-gray-50 py-2 px-4 rounded-lg mb-4 shadow-sm">
                     <h3 className="font-medium text-gray-700">{displayDate}</h3>
                   </div>
 
@@ -158,7 +158,7 @@ export default function RecordsPage() {
                         <div key={record.id} className="mb-6 relative">
                           {/* Timeline dot */}
                           <div
-                            className={`absolute -left-6 w-10 h-10 rounded-full ${getRecordTypeColor(record.type)} flex items-center justify-center z-10 border-2 border-white shadow-sm`}
+                            className={`absolute -left-6 w-10 h-10 rounded-full ${getRecordTypeColor(record.type)} flex items-center justify-center border-2 border-white shadow-sm`}
                           >
                             {getRecordIcon(record.type)}
                           </div>
@@ -269,7 +269,7 @@ export default function RecordsPage() {
 
       {/* Floating add button */}
       <Link href="/records/new">
-        <Button className="fixed right-6 bottom-24 h-14 w-14 rounded-full shadow-lg bamboo-gradient">
+        <Button className="fixed right-6 bottom-24 h-14 w-14 rounded-full shadow-lg bamboo-gradient z-20">
           <Plus size={24} className="text-white" strokeWidth={3} />
         </Button>
       </Link>

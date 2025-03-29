@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Upload, X } from "lucide-react"
@@ -15,6 +15,10 @@ interface ImageUploadProps {
 export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const [preview, setPreview] = useState<string | null>(value || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setPreview(value || null)
+  }, [value])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -58,7 +62,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
             type="button"
             variant="destructive"
             size="icon"
-            className="absolute top-2 right-2 h-8 w-8 rounded-full"
+            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-gray-300"
             onClick={handleRemove}
           >
             <X className="h-4 w-4" />

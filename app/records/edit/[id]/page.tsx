@@ -12,6 +12,7 @@ import { FileText, ImageIcon, DollarSign, Ruler, ArrowLeft } from "lucide-react"
 import { useStore, type RecordType, type Record } from "@/lib/store"
 import { useRouter } from "next/navigation"
 import { toast } from "@/components/ui/use-toast"
+import { ImageUpload } from "@/components/image-upload"
 
 export default function EditRecordPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -163,8 +164,8 @@ export default function EditRecordPage({ params }: { params: { id: string } }) {
 
               <TabsContent value="image" className="mt-0 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">图片URL</label>
-                  <Input placeholder="输入图片URL" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+                  <label className="block text-sm font-medium mb-1">图片</label>
+                  <ImageUpload value={imageUrl} onChange={setImageUrl} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">描述</label>
