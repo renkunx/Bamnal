@@ -225,11 +225,14 @@ export const useStore = create<BambooStore>((set, get) => ({
     try {
       const supabase = getSupabaseClient()
       const { data: userData } = await supabase.auth.getUser()
-
       if (!userData.user) throw new Error("用户未登录")
 
       // 将文件上传storage
-      const { path } = await uploadImage(record?.imageUrl || '', userData.user.id, 'records')
+      let path = undefined
+      if (record?.imageUrl?.includes(';base64,')) {
+        const { path: newPath } = await uploadImage(record?.imageUrl || '', userData.user.id, 'records')
+        path = newPath
+      }
 
       const { data, error } = await supabase
         .from("records")
@@ -240,7 +243,7 @@ export const useStore = create<BambooStore>((set, get) => ({
             title: record.title,
             type: record.type,
             content: record.content,
-            image_url: path,
+            image_url: path || record.imageUrl,
             amount: record.amount,
             category: record.category,
             measurement_type: record.measurementType,
