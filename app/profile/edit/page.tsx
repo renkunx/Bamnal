@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, Save } from "lucide-react"
 import { AvatarUpload } from "@/components/avatar-upload"
 import { useProfileStore } from "@/lib/profile-service"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth/auth-provider"
 
 export default function EditProfilePage() {

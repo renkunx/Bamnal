@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { useProfileStore } from "@/lib/profile-service"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useRouter } from 'next/navigation'

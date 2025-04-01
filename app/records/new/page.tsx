@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FileText, ImageIcon, DollarSign, Ruler, ArrowLeft } from "lucide-react"
 import { useStore, type RecordType } from "@/lib/store"
 import { useRouter } from "next/navigation"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { ImageUpload } from "@/components/image-upload"
 
 export default function NewRecordPage() {
