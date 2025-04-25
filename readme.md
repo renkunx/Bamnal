@@ -12,6 +12,7 @@
 - 🌓 深色/浅色主题切换
 - 🔔 提醒功能
 - 📊 数据统计和导出
+- 📈 用户行为分析（Microsoft Clarity）
 
 ### 技术特点
 - 基于 Next.js 13+ App Router
