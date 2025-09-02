@@ -3,12 +3,11 @@
 import type React from "react"
 import { useRouter } from "next/navigation"
 import { createContext, useContext, useEffect, useState } from "react"
-import { getSupabaseClient } from "@/lib/supabase/client"
-import type { User, Session } from "@supabase/supabase-js"
+import { getAuthAdapter } from "@/lib/auth/client"
 
 type AuthContextType = {
-  user: User | null
-  session: Session | null
+  user: any | null
+  session: any | null
   isLoading: boolean
   signIn: (email: string, password: string) => Promise<any>
   signUp: (email: string, password: string) => Promise<any>
@@ -19,21 +18,19 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
+  const [user, setUser] = useState<any | null>(null)
+  const [session, setSession] = useState<any | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = getSupabaseClient()
+  const auth = getAuthAdapter()
   const router = useRouter()
 
   useEffect(() => {
     const getSession = async () => {
       setIsLoading(true)
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
+        const session = await auth.getSession()
         setSession(session)
-        setUser(session?.user ?? null)
+        setUser(session?.user ?? session ?? null)
       } catch (error) {
         console.error("Error getting session:", error)
       } finally {
@@ -43,11 +40,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getSession()
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const subscription = auth.onAuthStateChange((_event, session) => {
       setSession(session)
-      setUser(session?.user ?? null)
+      setUser(session?.user ?? session ?? null)
       setIsLoading(false)
       
       // 根据认证状态进行路由跳转
@@ -59,15 +54,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => {
-      subscription.unsubscribe()
+      subscription?.unsubscribe?.()
     }
-  }, [supabase, router])
+  }, [auth, router])
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const { error } = await auth.signInWithPassword({ email, password })
     if (!error) {
       router.push('/')
     }
@@ -75,13 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
+    const { error } = await auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth/callback` } })
     if (!error) {
       router.push('/auth/verify-email')
     }
@@ -89,14 +75,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    await auth.signOut()
     router.push('/auth/login')
   }
 
   const resetPassword = async (email: string) => {
-    return await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
-    })
+    const backend = process.env.NEXT_PUBLIC_BACKEND || 'supabase'
+    if (backend === 'supabase') {
+      const { getSupabaseClient } = await import("@/lib/supabase/client")
+      const supabase = getSupabaseClient()
+      return await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/reset-password` })
+    }
+    return { error: { message: '请在 Appwrite 控制台配置密码重置流程' } }
   }
 
   const value = {
