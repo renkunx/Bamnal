@@ -13,30 +13,12 @@
 - 🔔 提醒功能
 - 📊 数据统计和导出
 - 📈 用户行为分析（Microsoft Clarity）
- - 🧩 可切换后端：Supabase 或 Appwrite（实验性）
 
 ### 技术特点
 - 基于 Next.js 13+ App Router
 - TypeScript 支持
 - Tailwind CSS 样式方案
 - shadcn/ui 组件库集成
-
-#### 后端切换（实验性）
-- 通过环境变量切换后端实现：
-  - `NEXT_PUBLIC_BACKEND`: `supabase`（默认）或 `appwrite`
-  - Supabase 仍使用现有配置。
-  - Appwrite 需新增：
-    - `NEXT_PUBLIC_APPWRITE_ENDPOINT`
-    - `NEXT_PUBLIC_APPWRITE_PROJECT_ID`
-    - `NEXT_PUBLIC_APPWRITE_BUCKET_ID`
-
-支持模块：
-- 认证：`components/auth/auth-provider.tsx` 均已适配 `lib/auth/client.ts` 的统一接口
-- 存储：`lib/supabase/storage.ts` 基于环境自动走 Appwrite 的 `Storage`
-
-注意事项：
-- Appwrite 的密码重置/邮件校验需要在控制台配置（当前适配层对重置密码给出引导信息）。
-- 若 Appwrite 存储桶非公开，建议使用 Appwrite Functions 或 JWT 生成受控访问链接。
 
 ### 1. 标签系统（Tag System）
 
